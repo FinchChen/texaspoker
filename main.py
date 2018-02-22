@@ -1,10 +1,9 @@
 class main(object):
 
-    import func
+    import newfunc
 
-    dealer = func.dealer(2)
-    dealer.printGame()
-    dealer.calculateMyHand()
+    dealer = newfunc.dealer(2)
+
    
 
     
