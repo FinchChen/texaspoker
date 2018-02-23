@@ -76,9 +76,13 @@ class dealer(object):
                 strength = 'Strong'
             elif cards[1] >= 8:
                 strength = 'Dangerous'
+            else:
+                strength = 'Weak'
         elif cards[0] == 10:
             if cards[1] >= 8:
                 strength = 'Opportunity'
+            else:
+                strength = 'Weak'
         elif cards[0]-cards[1] == 1 and cards[1] >= 6:
             strength = 'Opportunity'
         else:
@@ -95,8 +99,8 @@ class dealer(object):
 
     def calaulate_hand_strength(self,cards,types):
 
+        #print cards
         strength = hex(types * 16 ** 5 + cards[0] * 16 ** 4 + cards[1] * 16 ** 3 + cards[2] * 16 **2 + cards[3] * 16 + cards[4])
-
 
         return strength
 
@@ -108,22 +112,35 @@ class dealer(object):
         keys = []
         tmp_list = list(set(cards))
         tmp_list.sort(reverse=True)
-        types = 0
+        types = 999
 
         for i in tmp_list:
             if cards.count(i) >= 2:
                 keys.append(i)
 
         if length - unique >= 3:
+            types = 666
+
             for i in tmp_list:
-                if cards.count(i) == 2 or cards.count(i) == 3:
-                    types = 5
-                    break
+                if cards.count(i) == 3:
+                    if len(keys) == 1:
+                        types = 3
+                        break
+                    elif len(keys) >= 2:
+                        types = 5
+                        break
+                    else:
+                        print 'jesus'
                 elif cards.count(i) == 4:
                     types = 6
                     key6 = i
                     break
+            
+            if len(keys) == 3:
+                types = 2
+            
         elif unique == length - 2:
+            types = 6666
             for i in tmp_list:
                 if cards.count(i) == 2:
                     types = 2
@@ -135,6 +152,7 @@ class dealer(object):
                 types = 4
                 cards = tmp_list
         elif length - unique <= 1 :
+            types = 1
             for i in range(unique-4):
                 if tmp_list[i] - tmp_list[i+4] == 4:
                     types = 4
@@ -142,6 +160,10 @@ class dealer(object):
                     break
                 elif length == unique:
                     types = 0
+                    break
+                elif length - unique == 1:
+                    types = 1
+                    break
         else:
             types = 1
 
@@ -159,7 +181,14 @@ class dealer(object):
                 elif cards.count(i) == 3:
                     key3 = i
             key2.sort(reverse=True)
-            best = [key3,key3,key3,key2[0],key2[0]]
+            if key2 == []:
+                for i in tmp_list:
+                    if cards.count(i) == 3:
+                        key2.append(i)
+                key2.sort(reverse=True)
+                best = [key2[0],key2[0],key2[0],key2[1],key2[1]]
+            else:
+                best = [key3,key3,key3,key2[0],key2[0]]
         elif types == 4:
             best = tmp_list[:5]
         elif types == 3:
@@ -177,25 +206,40 @@ class dealer(object):
         elif types == 0:
             best = cards[:5]
         
+        #print types
         strength = self.calaulate_hand_strength(best,types)
 
         return best,types,strength
 
-    def simulation(self,holds,borads):
+    def simulation(self,holds,borads,circles):
 
         import random
 
-        tmp_deck = self.Deck
-        random.shuffle(tmp_deck)
-        my_holds = holds
-        final_borad = borads + tmp_deck[:2]
-        opp_holds = tmp_deck[2:4]
-        print self.find_my_best(my_holds + final_borad)
-        print opp_holds , final_borad , my_holds
-        print self.find_my_best(opp_holds + final_borad)
-        
+        win = 0
+        total = 0
 
-    
+        for i in range(circles):
+
+            tmp_deck = self.Deck
+            random.shuffle(tmp_deck)
+            my_holds = holds
+            final_borad = borads + tmp_deck[:2]
+            opp_holds = tmp_deck[2:4]
+
+            '''
+            print 'Community Cards: ' + str(final_borad)
+            print 'My holds: ' + str(my_holds)
+            print 'Opponent holds: ' + str(opp_holds)
+            print self.find_my_best(my_holds + final_borad)
+            print self.find_my_best(opp_holds + final_borad)
+            '''
+            if self.find_my_best(my_holds + final_borad) > self.find_my_best(opp_holds + final_borad):
+                win += 1
+            
+            total += 1
+
+        return format(win/total,'0.2%')
+
     def start(self):
 
         print 'Game start '
@@ -212,7 +256,7 @@ class dealer(object):
         print 'My hand: ' + hand1[0] + ' ' + hand1[1] + ' ' + hand1[2] + ' ' + hand1[3] + ' ' + hand1[4]
         print 'Hand type: ' + self.R_Type_MAPPING[str(self.find_my_best(self.Hand1 + self.Boradcards)[1])]
         
-        self.simulation(self.Hand1,self.Boradcards)
+        print self.simulation(self.Hand1,self.Boradcards,1000)
         
         #print 'Hand strength: '
         #print 'Hand strength: '
