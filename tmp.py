@@ -1,6 +1,5 @@
-import numpy as np
+import newfunc
 
-num=1000000
-lst = np.random.randint(num / 100000, size=num)
-
-print dict(zip(*np.unique(lst, return_counts=True)))
+dealer = newfunc.dealer(2)
+print dealer.find_my_best([0,1,1,2,3,6,12])
+#dealer.simulation([1,2],[3,4,5],1,1)
