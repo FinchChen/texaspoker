@@ -289,7 +289,7 @@ class dealer(object):
         print 'Hand type: ' + self.R_Type_MAPPING[str(self.find_my_best(self.Hand1 + self.Boradcards)[1])]
         
         print 'Hand simulation: ' + format(self.simulation(self.Hand1,self.Boradcards,10000),'0.2%')
-        
+
         #print 'Hand strength: '
         #print 'Hand strength: '
         #print self.calaulate_hand_strength(self.Hand1 + self.Boradcards)
@@ -302,7 +302,7 @@ class dealer(object):
 
     def decision(self,holds,borads,bet,pot,opponents):
         winrate = self.simulation_outside(holds,borads,10000,opponents)
-        print 'Hand simulation: ' + format(winrate,'0.2%')
+        print 'Hand simulation_outside: ' + format(winrate,'0.2%')
         potodds = self.potodds(bet,pot)
         print 'Pot odds: '+ format(potodds,'0.2%')
         returnrate = self.returnrate(float(winrate),float(potodds))
