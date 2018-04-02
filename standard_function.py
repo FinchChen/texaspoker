@@ -5,11 +5,25 @@ class robot(object):
         self.name = name
         self.money = money
         self.minbet = minbet
+        self.pot = 0
+        self.hand = []
+        self.boradCards = []
+        self.isRaise = False
+        self.betAmount = 0
         self.MAPPING = {'A':12,'K':11,'Q':10,'J':9,'10':8,'9':7,'8':6,'7':5,'6':4,'5':3,'4':2,'3':1,'2':0}
         self.R_MAPPING = {'12':'A','11':'K','10':'Q','9':'J','8':'10','7':'9','6':'8','5':'7','4':'6','3':'5','2':'4','1':'3','0':'2'}
         self.Type_MAPPING = {'High card':0,'One pair':1,'Two pairs':2,'Trips':3,'Straight':4,'Full house':5,'Quads':6}
         self.R_Type_MAPPING = {'0':'High card','1':'One pair','2':'Two pairs','3':'Trips','4':'Straight','5':'Full house','6':'Quads'}
 
+        return
+
+    def clean(self):
+
+        self.pot = 0
+        self.boradCards = []
+        self.isRaise = False
+        self.betAmount = 0
+    
         return
 
     def r_convert(self,cards_vision): # array in list eg.['A','9']
@@ -73,21 +87,25 @@ class robot(object):
 
         return strength
 
-    def addHand(self,hand):
+    def raiseDecision(self,totalBET,totalPOT):
 
-        self.hand = hand
+        self.pot = totalPOT
+        self.previousBet = self.betAmount
+        self.needToBet = totalBET - self.previousBet
+        self.potodds = self.needToBet / totalPOT
+        if self.potodds <= 0.5:
+            self.decision = 'call'
+        else:
+            self.decision = 'fold'
 
-        return
+        print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
+
+        return self.decision
 
     def addPosition(self,position):
 
         self.oppoentNumber = position[1]-1
-
-        if position[0] == 0:
-
-            self.position = 'Button'
-
-            return
+        
 
         pos = float(position[0]+1) / float(position[1])
 
@@ -105,35 +123,45 @@ class robot(object):
         
         return
 
-    def addPot(self,pot):
-        
-        self.pot = pot
-
-        return
-
-    def addMoney(self,money):
-
-        self.money += money
-
-        return
-    
-    def getMoney(self):
-
-        return self.money
-
-    def setBorad(self,boradCards):
-
-        self.boradCards = boradCards
-
-        return
-
     def startHand(self): # Start Hand Chart
 
-        self.decision = 'call'
-        self.betAmount = self.minbet
-        self.money -= self.betAmount
+        if self.position == 'Utg':
+            self.decision = 'call'
+            return self.decision
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
+        if self.hand == [12,12] or self.hand == [11,11]: # AA and KK
+            self.decision = 'raise'
+        elif self.hand == [10,10]:
+            self.decision = 'raise'
+        elif self.hand == [12,11]:
+            self.decision = 'raise'
+        elif self.hand == [9,9] or self.hand == [8,8] or self.hand == [7,7]:
+            self.decision = 'raise'
+        elif self.hand[0] == self.hand[1] and self.hand[0] <= 6:
+            self.decision = 'call'
+        elif self.hand[0] == 12 and self.hand[1] >= 8:
+            self.decision = 'call'
+        elif self.hand[0] == 12:
+            self.decision = 'call'
+        elif self.hand[0] <= 11 and self.hand[0] >= 10 and self.hand[1] <= 10 and self.hand >= 9:
+            self.decision = 'call'
+        elif self.hand[0] - self.hand[1] == 1 and self.hand[1] >= 4:
+            self.decision = 'call'
+        else:
+            if self.position == 'Button':
+                self.decision = 'call'
+            self.decision = 'fold'
+
+        if self.decision == 'call':
+            self.betAmount = self.minbet
+        elif self.decision == 'raise':
+            self.betAmount = 3 * self.minbet
+        elif self.decision == 'fold':
+            self.betAmount = 0
+        
+        self.money -= self.betAmount
+        
+        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 
@@ -143,25 +171,17 @@ class robot(object):
 
         #
 
-        self.decision = 'raise'
+        self.decision = 'call'
         self.betAmount = self.minbet
         self.money -= self.betAmount
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
+        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 
-    def getBetAmount(self):
-
-        return self.betAmount
-
-    def getName(self):
-
-        return self.name
-
     def getHandStrength(self):
 
-        best,types,strength = self.find_my_best(self.hand+self.boradCards)
+        best,self.types,strength = self.find_my_best(self.hand+self.boradCards)
 
         return strength
 
@@ -187,57 +207,57 @@ class robot(object):
                     print 'OOOOOOut of range!!!'
                 elif cards.count(i) == 3:
                     if len(keys) == 1:
-                        types = 3
+                        types = 4 # trips
                         break
                     elif len(keys) >= 2:
-                        types = 5
+                        types = 6 # full house
                         break
                     else:
                         print 'jesus'
 
             for i in tmp_list:
                 if cards.count(i) == 4:
-                    types = 6
+                    types = 7 # quads
                     key6 = i
                     break
             
             if len(keys) == 3:
-                types = 2
+                types = 3 # two pairs
             
         elif unique == length - 2:
             types = 6666
             for i in tmp_list:
                 if cards.count(i) == 2:
-                    types = 2
+                    types = 3 # two pairs
                     break
                 elif cards.count(i) == 3:
-                    types = 3
+                    types = 4 # trips
                     break
             if unique == 5 and tmp_list[0] - tmp_list[4] == 4:
-                types = 4
+                types = 5 # straight
                 cards = tmp_list
         elif length - unique <= 1 :
-            types = 1
+            types = 2 # one pair
             for i in range(unique-4):
                 if tmp_list[i] - tmp_list[i+4] == 4:
-                    types = 4
+                    types = 5 # straight
                     del tmp_list[:i]
                     break
                 elif length == unique:
-                    types = 0
+                    types = 1 # high card
                     break
                 elif length - unique == 1:
-                    types = 1
-                    break
+                    types = 2 # one pair
+                    #break
         else:
-            types = 1
+            types = 2 # one pair
 
         best = []
 
-        if types == 6:
+        if types == 7:
             tmp_list.remove(key6)
             best = [key6,key6,key6,key6,tmp_list[0]]
-        elif types == 5:
+        elif types == 6:
             key2 = []
             key3 = 999
             for i in tmp_list:
@@ -257,21 +277,21 @@ class robot(object):
                     print cards, types, key2, tmp_list, length, unique
             else:
                 best = [key3,key3,key3,key2[0],key2[0]]
-        elif types == 4:
+        elif types == 5:
             best = tmp_list[:5]
-        elif types == 3:
+        elif types == 4:
             tmp_list.remove(keys[0])
             best = keys * 3 + tmp_list[:2]
-        elif types == 2:
+        elif types == 3:
             keys.sort(reverse=True)
             for i in keys[:2]:
                 best.append(i)
                 best.append(i)
             best.append(tmp_list[0])
-        elif types == 1:
+        elif types == 2:
             tmp_list.remove(keys[0])
             best = keys * 2 + tmp_list[:3]
-        elif types == 0:
+        elif types == 1:
             best = cards[:5]
         '''
         time.sleep(0.1)
@@ -288,18 +308,10 @@ class robot(object):
         time.sleep(0.1)
         print cards
         '''
-        try:
-            strength = hex(types * 16 ** 5 + cards[0] * 16 ** 4 + cards[1] * 16 ** 3 + cards[2] * 16 **2 + cards[3] * 16 + cards[4])
-        except:
-            print cards, types
-
+        
+        strength = hex(types * 16 ** 5 + cards[0] * 16 ** 4 + cards[1] * 16 ** 3 + cards[2] * 16 **2 + cards[3] * 16 + cards[4])
+        # print hex(cards[0] * 16 ** 4 + cards[1] * 16 ** 3 + cards[2] * 16 **2 + cards[3] * 16 + cards[4])
         return strength
-
-    def test(self):
-
-        print self.name,self.position,self.oppoentNumber,self.hand
-
-        return
 
 
 class dealer(object):
