@@ -1,3 +1,6 @@
+from __future__ import division
+import random
+
 class robot(object):
 
     def __init__(self,name,money,minbet):
@@ -89,9 +92,12 @@ class robot(object):
 
     def raiseDecision(self,totalBET,totalPOT):
 
+        # need update
+
         self.pot = totalPOT
         self.previousBet = self.betAmount
         self.needToBet = totalBET - self.previousBet
+        self.betAmount = self.needToBet
         self.potodds = self.needToBet / totalPOT
         if self.potodds <= 0.5:
             self.decision = 'call'
@@ -125,9 +131,9 @@ class robot(object):
 
     def startHand(self): # Start Hand Chart
 
-        if self.position == 'Utg':
-            self.decision = 'call'
-            return self.decision
+        ###if self.position == 'Utg':
+        ###   self.decision = 'call'
+        ###   return self.decision
 
         if self.hand == [12,12] or self.hand == [11,11]: # AA and KK
             self.decision = 'raise'
@@ -154,10 +160,14 @@ class robot(object):
 
         if self.decision == 'call':
             self.betAmount = self.minbet
+            if self.position == 'Utg':
+                self.betAmount = 0
         elif self.decision == 'raise':
             self.betAmount = 3 * self.minbet
         elif self.decision == 'fold':
             self.betAmount = 0
+            if self.position == 'Utg':
+                self.decision = 'call'
         
         self.money -= self.betAmount
         
@@ -166,8 +176,6 @@ class robot(object):
         return self.decision
 
     def makeDecision(self):
-
-        
 
         #
 
@@ -178,6 +186,93 @@ class robot(object):
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
+
+    def calpotodds(self,bet,pot):
+
+        return bet/(bet+pot)
+
+    def returnrate(self,winrate,potodds):
+
+        return winrate/potodds
+
+    def simulation_outside(self,circles,opponents):
+
+        win = 0
+        total = 0
+
+        for i in range(circles):
+
+            tmp_deck = [0,1,2,3,4,5,6,7,8,9,10,11,12] * 4
+            random.shuffle(tmp_deck)
+
+            for x in (self.hand+self.boradCards):
+                tmp_deck.remove(int(x))
+
+            my_holds = self.hand
+
+            tmp = 5-len(self.boradCards)
+            final_borad = self.boradCards + tmp_deck[:tmp]
+            del tmp_deck[:tmp]
+            opp_holds = []
+            for i in range(opponents):
+                opp_holds.append(tmp_deck[:2])
+                del tmp_deck[:2]
+
+            
+            #print 'Community Cards: ' + str(final_borad)
+            #print 'My holds: ' + str(my_holds)
+            #print 'Opponent holds: ' + str(opp_holds)
+            #print self.find_my_best(my_holds + final_borad)
+            #print self.find_my_best(opp_holds + final_borad)
+            
+            counter = 0
+            for i in opp_holds:
+                if self.find_my_best(my_holds + final_borad) > self.find_my_best(i + final_borad):
+                    counter += 1
+                
+            if counter == opponents:
+                win += 1
+
+            total += 1
+
+        return win/total
+
+    def decisionAI(self,opponents):
+
+        winrate = self.simulation_outside(1000,opponents)
+        print 'Hand simulation_outside: ' + format(winrate,'0.2%')
+        tmpbet = self.minbet if not self.isRaise else self.betAmount
+        potodds = self.calpotodds(tmpbet,self.pot)
+        print 'Pot odds: '+ format(potodds,'0.2%')
+        returnrate = self.returnrate(float(winrate),float(potodds))
+        print 'Rate of Return: ' + format(returnrate,'0.2%')
+        
+
+        tmp = random.randint(0,99)
+        if returnrate < 0.8:
+            if tmp <= 4:
+                print 'Raise (Bluff)'
+            else:
+                print 'Fold'
+        elif returnrate < 1:
+            if tmp <= 14:
+                print 'Raise (Bluff)'
+            elif tmp <= 20:
+                print 'Call'
+            else:
+                print 'Fold'
+        elif returnrate < 1.3:
+            if tmp <= 59:
+                print 'Call'
+            else:
+                print 'Raise (Dangerous)'
+        else:
+            if tmp <= 29:
+                print 'Call (Hide)'
+            else:
+                print 'Raise'
+        
+        print ''
 
     def getHandStrength(self):
 
@@ -317,8 +412,6 @@ class robot(object):
 class dealer(object):
 
     def __init__(self):
-
-        import random
 
         self.initDECK = [0,1,2,3,4,5,6,7,8,9,10,11,12] * 4
 

@@ -279,7 +279,8 @@ class dealer(object):
         hand = self.convert(self.Hand1)
         print 'My hold cards: ' + hand[0] + ' ' + hand[1]
         print 'Hand strength: ' + self.calaulate_hold_strength(self.Hand1)
-        print 'Hand simulation: ' + format(self.simulation(self.Hand1,[],10000),'0.2%')
+        print 'Hand simulation1: ' + format(self.simulation(self.Hand1,[],1000),'0.2%')
+        print 'Hand simulation2: ' + format(self.simulation_outside(self.Hand1,[],1000,4),'0.2%')
 
         print '\nFlop round'
         Boradcards = self.convert(self.Boradcards)
@@ -288,7 +289,8 @@ class dealer(object):
         print 'My hand: ' + hand1[0] + ' ' + hand1[1] + ' ' + hand1[2] + ' ' + hand1[3] + ' ' + hand1[4]
         print 'Hand type: ' + self.R_Type_MAPPING[str(self.find_my_best(self.Hand1 + self.Boradcards)[1])]
         
-        print 'Hand simulation: ' + format(self.simulation(self.Hand1,self.Boradcards,10000),'0.2%')
+        print 'Hand simulation1: ' + format(self.simulation(self.Hand1,self.Boradcards,1000),'0.2%')
+        print 'Hand simulation2: ' + format(self.simulation_outside(self.Hand1,self.Boradcards,1000,4),'0.2%')
 
         #print 'Hand strength: '
         #print 'Hand strength: '
@@ -301,7 +303,7 @@ class dealer(object):
         #print '\nRiver round'
 
     def decision(self,holds,borads,bet,pot,opponents):
-        winrate = self.simulation_outside(holds,borads,10000,opponents)
+        winrate = self.simulation_outside(holds,borads,100,opponents)
         print 'Hand simulation_outside: ' + format(winrate,'0.2%')
         potodds = self.potodds(bet,pot)
         print 'Pot odds: '+ format(potodds,'0.2%')
