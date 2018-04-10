@@ -1,4 +1,3 @@
-from __future__ import division
 import random
 
 class robot(object):
@@ -28,18 +27,6 @@ class robot(object):
         self.betAmount = 0
     
         return
-
-    def r_convert(self,cards_vision): # array in list eg.['A','9']
-
-        cards_vision.sort(reverse=True)
-        inner = []
-
-        for i in cards_vision:
-            
-            tmp = self.MAPPING[i]
-            inner.append(tmp)
-
-        return inner
     
     def convert(self,cards): # int in list eg.[11,2]
 
@@ -186,93 +173,6 @@ class robot(object):
 
         return self.decision
 
-    def calpotodds(self,bet,pot):
-
-        return bet/(bet+pot)
-
-    def returnrate(self,winrate,potodds):
-
-        return winrate/potodds
-
-    def simulation_outside(self,circles,opponents):
-
-        win = 0
-        total = 0
-
-        for i in range(circles):
-
-            tmp_deck = [0,1,2,3,4,5,6,7,8,9,10,11,12] * 4
-            random.shuffle(tmp_deck)
-
-            for x in (self.hand+self.boradCards):
-                tmp_deck.remove(int(x))
-
-            my_holds = self.hand
-
-            tmp = 5-len(self.boradCards)
-            final_borad = self.boradCards + tmp_deck[:tmp]
-            del tmp_deck[:tmp]
-            opp_holds = []
-            for i in range(opponents):
-                opp_holds.append(tmp_deck[:2])
-                del tmp_deck[:2]
-
-            
-            #print 'Community Cards: ' + str(final_borad)
-            #print 'My holds: ' + str(my_holds)
-            #print 'Opponent holds: ' + str(opp_holds)
-            #print self.find_my_best(my_holds + final_borad)
-            #print self.find_my_best(opp_holds + final_borad)
-            
-            counter = 0
-            for i in opp_holds:
-                if self.find_my_best(my_holds + final_borad) > self.find_my_best(i + final_borad):
-                    counter += 1
-                
-            if counter == opponents:
-                win += 1
-
-            total += 1
-
-        return win/total
-
-    def decisionAI(self,opponents):
-
-        winrate = self.simulation_outside(1000,opponents)
-        print 'Hand simulation_outside: ' + format(winrate,'0.2%')
-        tmpbet = self.minbet if not self.isRaise else self.betAmount
-        potodds = self.calpotodds(tmpbet,self.pot)
-        print 'Pot odds: '+ format(potodds,'0.2%')
-        returnrate = self.returnrate(float(winrate),float(potodds))
-        print 'Rate of Return: ' + format(returnrate,'0.2%')
-        
-
-        tmp = random.randint(0,99)
-        if returnrate < 0.8:
-            if tmp <= 4:
-                print 'Raise (Bluff)'
-            else:
-                print 'Fold'
-        elif returnrate < 1:
-            if tmp <= 14:
-                print 'Raise (Bluff)'
-            elif tmp <= 20:
-                print 'Call'
-            else:
-                print 'Fold'
-        elif returnrate < 1.3:
-            if tmp <= 59:
-                print 'Call'
-            else:
-                print 'Raise (Dangerous)'
-        else:
-            if tmp <= 29:
-                print 'Call (Hide)'
-            else:
-                print 'Raise'
-        
-        print ''
-
     def getHandStrength(self):
 
         best,self.types,strength = self.find_my_best(self.hand+self.boradCards)
@@ -387,10 +287,7 @@ class robot(object):
             best = keys * 2 + tmp_list[:3]
         elif types == 1:
             best = cards[:5]
-        '''
-        time.sleep(0.1)
-        print types
-        '''
+
         if types == 666:
             print cards, best
         strength = self.calaulate_hand_strength(best,types)
@@ -398,48 +295,7 @@ class robot(object):
         return best,types,strength
 
     def calaulate_hand_strength(self,cards,types):
-        '''
-        time.sleep(0.1)
-        print cards
-        '''
         
         strength = hex(types * 16 ** 5 + cards[0] * 16 ** 4 + cards[1] * 16 ** 3 + cards[2] * 16 **2 + cards[3] * 16 + cards[4])
         # print hex(cards[0] * 16 ** 4 + cards[1] * 16 ** 3 + cards[2] * 16 **2 + cards[3] * 16 + cards[4])
         return strength
-
-
-class dealer(object):
-
-    def __init__(self):
-
-        self.initDECK = [0,1,2,3,4,5,6,7,8,9,10,11,12] * 4
-
-        tmp_deck = self.initDECK
-        random.shuffle(tmp_deck)
-        self.Deck = tmp_deck
-
-        return
-
-    def dealHandCards(self):
-
-        Hand1 = self.Deck[:2]
-        Hand1.sort(reverse=True)
-        del self.Deck[:2]
-
-        return Hand1
-
-    def dealBoradCards(self):
-
-        Boradcards = self.Deck[:3]
-        del self.Deck[:3]
-        Boradcards.sort(reverse=True)
-
-        return Boradcards
-    
-    def dealTwoMoreCards(self):
-
-        cards = self.Deck[:2]
-        cards.sort(reverse=True)
-        del self.Deck[:2]
-
-        return cards
