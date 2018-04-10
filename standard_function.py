@@ -339,7 +339,7 @@ class robot(object):
                     break
                 elif length == unique:
                     types = 1 # high card
-                    break
+                    #break
                 elif length - unique == 1:
                     types = 2 # one pair
                     #break

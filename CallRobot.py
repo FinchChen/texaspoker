@@ -1,5 +1,3 @@
-import random
-
 class robot(object):
 
     def __init__(self,name,money,minbet):
@@ -12,6 +10,7 @@ class robot(object):
         self.boradCards = []
         self.isRaise = False
         self.betAmount = 0
+        self.preStack = 0
         self.MAPPING = {'A':12,'K':11,'Q':10,'J':9,'10':8,'9':7,'8':6,'7':5,'6':4,'5':3,'4':2,'3':1,'2':0}
         self.R_MAPPING = {'12':'A','11':'K','10':'Q','9':'J','8':'10','7':'9','6':'8','5':'7','4':'6','3':'5','2':'4','1':'3','0':'2'}
         self.Type_MAPPING = {'High card':0,'One pair':1,'Two pairs':2,'Trips':3,'Straight':4,'Full house':5,'Quads':6}
@@ -85,11 +84,11 @@ class robot(object):
         self.previousBet = self.betAmount
         self.needToBet = totalBET - self.previousBet
         self.betAmount = self.needToBet
-        self.potodds = self.needToBet / totalPOT
-        if self.potodds <= 0.5:
-            self.decision = 'call'
-        else:
-            self.decision = 'fold'
+        self.decision = 'call'
+        if self.money < self.minbet * 3 or self.needToBet > self.money:
+            self.decision = 'All-in'
+            self.betAmount = self.money
+        self.money -= self.betAmount
 
         print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
 
@@ -116,44 +115,18 @@ class robot(object):
         
         return
 
-    def startHand(self): # Start Hand Chart
+    def startHand(self):
 
-        ###if self.position == 'Utg':
-        ###   self.decision = 'call'
-        ###   return self.decision
+        self.decision = 'call'
+        self.betAmount = self.minbet
 
-        if self.hand == [12,12] or self.hand == [11,11]: # AA and KK
-            self.decision = 'raise'
-        elif self.hand == [10,10]:
-            self.decision = 'raise'
-        elif self.hand == [12,11]:
-            self.decision = 'raise'
-        elif self.hand == [9,9] or self.hand == [8,8] or self.hand == [7,7]:
-            self.decision = 'raise'
-        elif self.hand[0] == self.hand[1] and self.hand[0] <= 6:
-            self.decision = 'call'
-        elif self.hand[0] == 12 and self.hand[1] >= 8:
-            self.decision = 'call'
-        elif self.hand[0] == 12:
-            self.decision = 'call'
-        elif self.hand[0] <= 11 and self.hand[0] >= 10 and self.hand[1] <= 10 and self.hand >= 9:
-            self.decision = 'call'
-        elif self.hand[0] - self.hand[1] == 1 and self.hand[1] >= 4:
-            self.decision = 'call'
-        else:
-            self.decision = 'fold'
-
-        if self.decision == 'call':
-            self.betAmount = self.minbet
-            if self.position == 'Utg':
-                self.betAmount = 0
-        elif self.decision == 'raise':
-            self.betAmount = 3 * self.minbet
-        elif self.decision == 'fold':
+        if self.position == 'Utg':
             self.betAmount = 0
-            if self.position == 'Utg':
-                self.decision = 'call'
-        
+
+        if self.money < self.minbet * 3:
+            self.decision = 'All-in'
+            self.betAmount = self.money
+
         self.money -= self.betAmount
         
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
@@ -165,9 +138,12 @@ class robot(object):
         # standard robot, decided by position, if back and no raise then raise(bluff)
         # if got one pair or above then raise 1/2 pot
 
-        self.decision = 'call'
-        self.betAmount = self.minbet
-        self.money -= self.betAmount
+        self.decision = 'check'
+        self.betAmount = 0
+
+        if self.money < self.minbet * 3:
+            self.decision = 'All-in'
+            self.betAmount = self.money
 
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
@@ -239,7 +215,7 @@ class robot(object):
                     break
                 elif length == unique:
                     types = 1 # high card
-                    break
+                    #break
                 elif length - unique == 1:
                     types = 2 # one pair
                     #break
