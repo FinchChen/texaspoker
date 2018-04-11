@@ -11,6 +11,7 @@ class robot(object):
         self.isRaise = False
         self.betAmount = 0
         self.preStack = 0
+        self.previousBet = 0
         self.MAPPING = {'A':12,'K':11,'Q':10,'J':9,'10':8,'9':7,'8':6,'7':5,'6':4,'5':3,'4':2,'3':1,'2':0}
         self.R_MAPPING = {'12':'A','11':'K','10':'Q','9':'J','8':'10','7':'9','6':'8','5':'7','4':'6','3':'5','2':'4','1':'3','0':'2'}
         self.Type_MAPPING = {'High card':0,'One pair':1,'Two pairs':2,'Trips':3,'Straight':4,'Full house':5,'Quads':6}
@@ -24,6 +25,7 @@ class robot(object):
         self.boradCards = []
         self.isRaise = False
         self.betAmount = 0
+    
     
         return
     
@@ -83,6 +85,14 @@ class robot(object):
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
+    
+    def reRaiseDecision(self):
+
+        self.decision = 'fold'
+
+        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+
+        return self.decision
 
     def addPosition(self,position):
 
@@ -108,8 +118,12 @@ class robot(object):
     def startHand(self):
 
         self.decision = 'fold'
-        self.betAmount = 0
-        
+
+        if self.money < self.minbet * 4:
+            self.decision = 'All-in'
+            self.betAmount += self.money
+            self.money = 0
+            
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
@@ -119,9 +133,7 @@ class robot(object):
         # standard robot, decided by position, if back and no raise then raise(bluff)
         # if got one pair or above then raise 1/2 pot
 
-        self.decision = 'call'
-        self.betAmount = self.minbet
-        self.money -= self.betAmount
+        self.decision = 'fold'
 
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 

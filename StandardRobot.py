@@ -86,13 +86,23 @@ class robot(object):
         self.previousBet = self.betAmount
         self.needToBet = totalBET - self.previousBet
         self.betAmount = self.needToBet
-        self.potodds = self.needToBet / totalPOT
+        self.potodds = self.betAmount / totalPOT
+        self.money -= self.betAmount
+
         if self.potodds <= 0.2:
             self.decision = 'call'
         else:
             self.decision = 'fold'
 
         print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
+
+        return self.decision
+
+    def reRaiseDecision(self):
+
+        self.decision = 'fold'
+
+        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 

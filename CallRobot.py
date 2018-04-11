@@ -78,40 +78,36 @@ class robot(object):
 
     def raiseDecision(self,totalBET,totalPOT):
 
-        # need update
-
         self.pot = totalPOT
         self.previousBet = self.betAmount
         self.needToBet = totalBET - self.previousBet
         self.betAmount = self.needToBet
         self.decision = 'call'
-        if self.money < self.minbet * 3 or self.needToBet > self.money:
+        if self.betAmount < self.minbet and self.previousBet == 0:
+            self.betAmount = self.minbet
+        if self.money < self.minbet * 4 or self.needToBet > self.money:
             self.decision = 'All-in'
             self.betAmount = self.money
-        self.money -= self.betAmount
+            self.money = 0
+        else:
+            self.money -= self.betAmount
 
         print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
 
         return self.decision
+    
+    def reRaiseDecision(self):
+
+        self.decision = 'fold'
+
+        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+
+        return self.decision
+
 
     def addPosition(self,position):
 
-        self.oppoentNumber = position[1]-1
-        
-
-        pos = float(position[0]+1) / float(position[1])
-
-        if pos <= 1.0/3.0:
-
-            self.position = 'Front'
-        
-        elif pos <= 2.0/3.0:
-
-            self.position = 'Middle'
-
-        else:
-
-            self.position = 'Back'
+        self.position = ''
         
         return
 
@@ -123,11 +119,12 @@ class robot(object):
         if self.position == 'Utg':
             self.betAmount = 0
 
-        if self.money < self.minbet * 3:
+        if self.money < self.minbet * 4:
             self.decision = 'All-in'
             self.betAmount = self.money
-
-        self.money -= self.betAmount
+            self.money = 0
+        else:
+            self.money -= self.betAmount
         
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
@@ -141,9 +138,10 @@ class robot(object):
         self.decision = 'check'
         self.betAmount = 0
 
-        if self.money < self.minbet * 3:
+        if self.money < self.minbet * 4:
             self.decision = 'All-in'
             self.betAmount = self.money
+            self.money = 0
 
         print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
