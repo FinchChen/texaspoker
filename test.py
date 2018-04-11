@@ -10,11 +10,12 @@ class test(object):
 
     def __init__(self):
 
-        self.data = [[],[],[]]
+        self.data = [[],[],[],[],[],[],[],[],[],[]]
+        self.counter = 0
 
         self.minbet = 100
         self.ante = 50
-        self.initStack = 10000
+        self.initStack = 2000
         self.robot1 = CallRobot.robot('robot1', self.initStack, self.minbet)
         self.robot2 = CallRobot.robot('robot2', self.initStack, self.minbet)
         self.robot3 = CallRobot.robot('robot3', self.initStack, self.minbet)
@@ -213,12 +214,12 @@ class test(object):
                 if i in self.initial_game_list:
                     self.initial_game_list.remove(i)
             
-            if i.name == 'robot1':
-                self.data[0].append(i.money)
-            elif i.name == '4 standard robot':
-                self.data[1].append(i.money)
-            elif i.name == '5 fold robot':
-                self.data[2].append(i.money)
+        
+        for i in range(len(self.fixed_game_list)):
+            obj = self.fixed_game_list[i]
+            self.data[i+1].append(obj.money)
+        
+
 
         tmp1 = 0
         tmp2 = 0
@@ -238,6 +239,7 @@ class test(object):
         
         if playerCount == 1:
             self.GameEnd = True
+        '''
         elif playerCount <= 3:
             self.ante = 1000
             self.minbet = 2500
@@ -247,6 +249,7 @@ class test(object):
         elif playerCount <= 7:
             self.ante = 100
             self.minbet = 250
+        '''
 
         for i in self.in_game_list:
             i.clean()
@@ -260,10 +263,12 @@ class test(object):
         for i in self.initial_game_list:
             print i.name, i.money
         
-        print self.data
+        for i in self.fixed_game_list:
+            self.data[0].append(i.name)
+    
 
-        print 'Press enter to Exit.'
-        raw_input()
+        #print 'Press enter to Exit.'
+        #raw_input()
 
         return
 
@@ -333,7 +338,7 @@ class test(object):
 
         self.gameOver()
 
-        self.printData()
+        #self.printData()
     
     def printData(self):
 
@@ -344,22 +349,62 @@ class test(object):
         worksheet = workbook.add_worksheet('sheet')
 
         row = 0
-        col = 0
+        col = 1
 
-        for i in self.data:
+        for i in self.data[1:]:
             for y in i:
                 worksheet.write(row,col,y)
                 col += 1
-            col = 0
+            col = 1
             row += 1
+        
+        for k in range(len(self.fixed_game_list)):
+            worksheet.write(k,0,self.fixed_game_list[k].name)
 
         workbook.close()
         print 'success'
 
 
 def main():
+
     tmp = test()
-    tmp.start()
+    circle = 2
+    list1 = []
+    
+    for i in range(circle):
+        list1.append([])
+        tmp.start()
+        list1[i].append(tmp.data)
+    
+    name = str(time.localtime().tm_mon)+'.'+str(time.localtime().tm_mday)+'.'+str(time.localtime().tm_hour)+'.'+str(time.localtime().tm_min)
+    callbook = xlsxwriter.Workbook('call'+name+'.xlsx')
+    callsheet = callbook.add_worksheet('sheet')
+    standardbook = xlsxwriter.Workbook('standard'+name+'.xlsx')
+    standardsheet = standardbook.add_worksheet('sheet')
+
+    row1 = 0
+    col1 = 0
+    row2 = 0
+    col2 = 0
+
+    for k in list1:
+        for c in range(len(k[0])):
+            if k[0][c] == 'robot1':
+                for i in k[c]:
+                    callsheet.write(row1,col1,i)
+                    col1 += 1
+            elif k[0][c] == '4 standard robot':
+                for i in k[c]:
+                    standardsheet.write(row2,col2,i)
+                    col2 += 1
+        col1 = col2 = 0
+        row1 += 1
+        row2 += 1
+
+    callbook.close()
+    standardbook.close()    
+        
+
 
 
 main()
