@@ -29,6 +29,12 @@ class robot(object):
         self.betAmount = 0
     
         return
+    
+    def prt(self):
+
+        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money,str(self.winrate*100)+'%'
+
+        return
 
     def convert(self,cards): # int in list eg.[11,2]
 
@@ -84,60 +90,18 @@ class robot(object):
         self.pot = totalPOT
         self.previousBet = self.betAmount
         self.needToBet = totalBET - self.previousBet
-
-        if self.needToBet == 0:
-            self.decision = 'call'
-            return self.decision
-
-
         self.betAmount = self.needToBet
-
+        self.potodds = self.betAmount / totalPOT
+        self.winrate = self.simulation_outside(1000,opponents)
+        returnrate = self.returnrate(float(self.winrate),float(self.potodds))
         
-
-
-        potodds = self.calpotodds(self.betAmount,self.pot)
-
-        winrate = self.simulation_outside(100,opponents)
-        
-        returnrate = self.returnrate(float(winrate),float(potodds))
-
-        tmp = random.randint(0,99)
-        if returnrate < 0.8:
-            if tmp <= 4:
-                self.decision = 'raise' #bluff
-            else:
-                self.decision = 'fold'
-        elif returnrate < 1:
-            if tmp <= 14:
-                self.decision = 'raise' #bluff
-            elif tmp <= 20:
-                self.decision = 'call'
-            else:
-                self.decision = 'fold'
-        elif returnrate < 1.3:
-            if tmp <= 59:
-                self.decision = 'call'
-            else:
-                self.decision = 'raise'
+        if returnrate >= 1.3:
+            self.decision = 'call'
+            self.money -= self.betAmount
         else:
-            if tmp <= 29:
-                self.decision = 'call'
-            else:
-                self.decision = 'raise'
-        
-        if self.decision == 'call':
-            self.betAmount = self.minbet
-            if self.position == 'Utg':
-                self.betAmount = 0
-        elif self.decision == 'raise':
-            t = random.randint(2,5)
-            self.betAmount = t * self.minbet
-        elif self.decision == 'fold':
-            self.betAmount = 0
-            if self.position == 'Utg':
-                self.decision = 'call'
+            self.decision = 'fold'
 
-        self.money -= self.betAmount
+        self.prt()
 
         return self.decision
     
@@ -145,6 +109,8 @@ class robot(object):
     def reRaiseDecision(self):
 
         self.decision = 'fold'
+
+        self.prt()
 
         return self.decision
     
@@ -171,8 +137,8 @@ class robot(object):
 
     def startHand(self,opponents):
 
-
-        winrate = self.simulation_outside(100,opponents)
+        winrate = self.simulation_outside(1000,opponents)
+        self.winrate = winrate
         potodds = self.calpotodds(self.minbet,self.pot)
         returnrate = self.returnrate(float(winrate),float(potodds))
         
@@ -206,55 +172,48 @@ class robot(object):
             if self.position == 'Utg':
                 self.decision = 'call'
 
-        print winrate,potodds,returnrate,self.decision,self.betAmount
-
         self.money -= self.betAmount
+
+        self.prt()
 
         return self.decision
 
     def makeDecision(self,opponents):
 
-        winrate = self.simulation_outside(100,opponents)
+        winrate = self.simulation_outside(1000,opponents)
+        self.winrate = winrate
         potodds = self.calpotodds(self.minbet,self.pot)
         returnrate = self.returnrate(float(winrate),float(potodds))
 
         tmp = random.randint(0,99)
         if returnrate < 0.8:
-            if tmp <= 4:
-                self.decision = 'raise' #bluff
-            else:
-                self.decision = 'fold'
+            self.decision = 'check'
         elif returnrate < 1:
-            if tmp <= 14:
-                self.decision = 'raise' #bluff
-            elif tmp <= 20:
-                self.decision = 'call'
-            else:
-                self.decision = 'fold'
+            self.decision = 'check'
         elif returnrate < 1.3:
             if tmp <= 59:
-                self.decision = 'call'
+                self.decision = 'check'
             else:
                 self.decision = 'raise'
         else:
-            if tmp <= 29:
-                self.decision = 'call'
-            else:
-                self.decision = 'raise'
+            self.decision = 'raise'
         
-        if self.decision == 'call':
-            self.betAmount = self.minbet
-            if self.position == 'Utg':
-                self.betAmount = 0
-        elif self.decision == 'raise':
-            t = random.randint(2,5)
-            self.betAmount = t * self.minbet
-        elif self.decision == 'fold':
+        if self.decision == 'check':
             self.betAmount = 0
-            if self.position == 'Utg':
-                self.decision = 'call'
-
+        elif self.decision == 'raise':
+            #t = random.randint(3,8)
+            self.betAmount = self.minbet
+            if self.winrate >= 0.98:
+                if self.money >= 2 * self.pot:
+                    self.betAmount = 2 * self.pot
+                else:
+                    self.betAmount = self.money
+            elif self.winrate >= 0.9:
+                self.betAmount = 10 * self.minbet
+                
         self.money -= self.betAmount
+
+        self.prt()
 
         return self.decision
 

@@ -440,7 +440,7 @@ def main():
                 row1 += 1
                 col1 = 0
             '''
-            if k[0][0][c] == '8 random robot':
+            if k[0][0][c] == 'AI V1':
                 for i in k[0][c+1]:
                     callsheet.write(row1,col1,i)
                     col1 += 1
