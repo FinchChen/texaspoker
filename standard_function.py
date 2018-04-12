@@ -216,14 +216,7 @@ class robot(object):
             for i in range(opponents):
                 opp_holds.append(tmp_deck[:2])
                 del tmp_deck[:2]
-
-            
-            #print 'Community Cards: ' + str(final_borad)
-            #print 'My holds: ' + str(my_holds)
-            #print 'Opponent holds: ' + str(opp_holds)
-            #print self.find_my_best(my_holds + final_borad)
-            #print self.find_my_best(opp_holds + final_borad)
-            
+           
             counter = 0
             for i in opp_holds:
                 if self.find_my_best(my_holds + final_borad) > self.find_my_best(i + final_borad):

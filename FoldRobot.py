@@ -82,7 +82,7 @@ class robot(object):
 
         self.decision = 'fold'
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
     
@@ -90,7 +90,7 @@ class robot(object):
 
         self.decision = 'fold'
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 
@@ -124,18 +124,15 @@ class robot(object):
             self.betAmount += self.money
             self.money = 0
             
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 
     def makeDecision(self):
 
-        # standard robot, decided by position, if back and no raise then raise(bluff)
-        # if got one pair or above then raise 1/2 pot
-
         self.decision = 'fold'
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 

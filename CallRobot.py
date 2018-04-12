@@ -92,7 +92,7 @@ class robot(object):
         else:
             self.money -= self.betAmount
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,self.pot,self.money
 
         return self.decision
     
@@ -100,7 +100,7 @@ class robot(object):
 
         self.decision = 'fold'
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 
@@ -126,7 +126,7 @@ class robot(object):
         else:
             self.money -= self.betAmount
         
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 
@@ -143,7 +143,7 @@ class robot(object):
             self.betAmount = self.money
             self.money = 0
 
-        print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
+        #print self.name,self.convert(self.hand),self.decision,self.betAmount,'pot:',self.pot,'money:',self.money
 
         return self.decision
 

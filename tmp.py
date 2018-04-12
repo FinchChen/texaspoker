@@ -1,5 +1,3 @@
-list1 = [1]
+for i in range(len([0,1,2,3,4,5,6,7,8])):
 
-list1.append([])
-
-print list1[0]
+    print i

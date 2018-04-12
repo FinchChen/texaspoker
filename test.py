@@ -2,6 +2,8 @@ import CallRobot
 import Dealer
 import FoldRobot
 import StandardRobot
+import RandomRobot
+import AI_V1
 import xlsxwriter
 import time
 
@@ -15,17 +17,17 @@ class test(object):
 
         self.minbet = 100
         self.ante = 50
-        self.initStack = 2000
-        self.robot1 = CallRobot.robot('robot1', self.initStack, self.minbet)
-        self.robot2 = CallRobot.robot('robot2', self.initStack, self.minbet)
-        self.robot3 = CallRobot.robot('robot3', self.initStack, self.minbet)
+        self.initStack = 10000
+        self.robot1 = CallRobot.robot('1 call robot', self.initStack, self.minbet)
+        self.robot2 = CallRobot.robot('2 call robot', self.initStack, self.minbet)
+        self.robot3 = CallRobot.robot('3 call robot', self.initStack, self.minbet)
         self.robot4 = StandardRobot.robot(
             '4 standard robot', self.initStack, self.minbet)
         self.robot5 = FoldRobot.robot('5 fold robot', self.initStack, self.minbet)
-        self.robot6 = CallRobot.robot('robot6', self.initStack, self.minbet)
-        self.robot7 = CallRobot.robot('robot7', self.initStack, self.minbet)
-        self.robot8 = CallRobot.robot('robot8', self.initStack, self.minbet)
-        self.robot9 = CallRobot.robot('robot9', self.initStack, self.minbet)
+        self.robot6 = StandardRobot.robot('6 standard robot', self.initStack, self.minbet)
+        self.robot7 = StandardRobot.robot('7 standard robot', self.initStack, self.minbet)
+        self.robot8 = RandomRobot.robot('8 random robot', self.initStack, self.minbet)
+        self.robot9 = AI_V1.robot('AI V1', self.initStack, self.minbet)
         self.initial_game_list = [
             self.robot1, self.robot2, self.robot3, self.robot4, self.robot5,self.robot6,self.robot7,self.robot8,self.robot9]
         self.fixed_game_list = [self.robot1, self.robot2,
@@ -82,7 +84,11 @@ class test(object):
 
             for p in self.move_list[self.move_list.index(i)+1:]:
 
-                dec = p.raiseDecision(self.BET, self.POT)
+                if p.name != 'AI V1':
+                    dec = p.raiseDecision(self.BET, self.POT)
+                else:
+                    dec = p.raiseDecision(self.BET, self.POT, len(self.move_list))
+                
                 if dec == 'fold':
                     self.in_game_list.remove(p)
                     self.move_list.remove(p)
@@ -98,7 +104,11 @@ class test(object):
 
             for p in self.move_list[:self.move_list.index(i)]:
 
-                dec = p.raiseDecision(self.BET, self.POT)
+                if p.name != 'AI V1':
+                    dec = p.raiseDecision(self.BET, self.POT)
+                else:
+                    dec = p.raiseDecision(self.BET, self.POT, len(self.move_list))
+                
                 if dec == 'fold':
                     self.in_game_list.remove(p)
                     self.move_list.remove(p)
@@ -181,16 +191,38 @@ class test(object):
 
     def riverStage(self):
 
+        tmp = len(self.move_list)
+
         for i in range(len(self.move_list)):
 
-            obj = self.move_list[i]
-            obj.addPosition([i, len(self.move_list)])
-            obj.pot = self.POT
-            obj.boradCards = self.boradCards
-            deci = obj.makeDecision()
+            if i < len(self.move_list):
+                obj = self.move_list[i]
+                obj.addPosition([i, len(self.move_list)])
+                obj.pot = self.POT
+                obj.boradCards = self.boradCards
+                
+                if obj.name != 'AI V1':
+                    deci = obj.makeDecision()
+                else:
+                    deci = obj.makeDecision(len(self.move_list))
+                
+                if not self.test1(deci, obj):
+                    break
+                
+                if len(self.move_list) != tmp:
+                    obj = self.move_list[i-1]
+                    obj.addPosition([i, len(self.move_list)])
+                    obj.pot = self.POT
+                    obj.boradCards = self.boradCards
+                    
+                    if obj.name != 'AI V1':
+                        deci = obj.makeDecision()
+                    else:
+                        deci = obj.makeDecision(len(self.move_list))
 
-            if not self.test1(deci, obj):
-                break
+                    if not self.test1(deci, obj):
+                        break
+                    
 
         return
 
@@ -239,10 +271,10 @@ class test(object):
         
         if playerCount == 1:
             self.GameEnd = True
+        elif playerCount <= 4:
+            self.ante = 150
+            self.minbet = 300
         '''
-        elif playerCount <= 3:
-            self.ante = 1000
-            self.minbet = 2500
         elif playerCount <= 5:
             self.ante = 500
             self.minbet = 1250
@@ -254,7 +286,7 @@ class test(object):
         for i in self.in_game_list:
             i.clean()
 
-        print "Next Round.\n\n"
+        #print "Next Round.\n\n"
 
     def gameOver(self):
 
@@ -262,9 +294,6 @@ class test(object):
 
         for i in self.initial_game_list:
             print i.name, i.money
-        
-        for i in self.fixed_game_list:
-            self.data[0].append(i.name)
     
 
         #print 'Press enter to Exit.'
@@ -278,9 +307,9 @@ class test(object):
 
             #print 'Press enter to start.'
             #raw_input()
-            print "Initial the game..."
+            #print "Initial the game..."
             self.initialGame()
-            print "Game started.\n\nPre-flop stage:"
+            #print "Game started.\n\nPre-flop stage:"
             self.roundReset()
 
             self.utg = self.move_list[0]
@@ -291,33 +320,38 @@ class test(object):
             self.utg.pot = self.POT
             self.POT += self.utg.betAmount
 
-            print self.utg.name, self.utg.convert(
-                self.utg.hand), 'bet', self.utg.betAmount, 'pot:', self.utg.pot, 'money:', self.utg.money
+            #print self.utg.name, self.utg.convert(
+            #    self.utg.hand), 'bet', self.utg.betAmount, 'pot:', self.utg.pot, 'money:', self.utg.money
 
             for i in self.move_list[1:]:
                 i.addPosition([self.move_list.index(i), len(self.move_list)])
                 i.pot = self.POT
-                deci = i.startHand()
+                if i.name != 'AI V1':
+                    deci = i.startHand()
+                else:
+                    deci = i.startHand(len(self.move_list))
                 if not self.test1(deci, i):
                     break
 
             self.utg.pot = self.POT
             if not self.israised:
-                utgdeci = self.utg.startHand()
-
+                if self.utg.name != 'AI V1':
+                    utgdeci = self.utg.startHand()
+                else:
+                    utgdeci = self.utg.startHand(len(self.move_list))
                 self.test1(utgdeci, self.utg)
 
             if len(self.in_game_list) == 1:
 
                 self.in_game_list[0].money += self.POT
                 self.POT = 0
-                print 'winner ??'
+                #print 'winner ??'
                 continue
 
             self.preflopOver()
 
-            print "\nTurn stage:\nThe borad cards are: %s,%s,%s" % (self.robot1.convert(
-                self.boradCards)[0], self.robot1.convert(self.boradCards)[1], self.robot1.convert(self.boradCards)[2])
+            #print "\nTurn stage:\nThe borad cards are: %s,%s,%s" % (self.robot1.convert(
+            #    self.boradCards)[0], self.robot1.convert(self.boradCards)[1], self.robot1.convert(self.boradCards)[2])
 
             self.turnStart()
 
@@ -325,14 +359,14 @@ class test(object):
 
             self.turnOver()
 
-            print "\nRiver stage:\nThe borad cards are: %s,%s,%s,%s,%s" % (self.robot1.convert(self.boradCards)[0], self.robot1.convert(
-                self.boradCards)[1], self.robot1.convert(self.boradCards)[2], self.robot1.convert(self.boradCards)[3], self.robot1.convert(self.boradCards)[4])
+            #print "\nRiver stage:\nThe borad cards are: %s,%s,%s,%s,%s" % (self.robot1.convert(self.boradCards)[0], self.robot1.convert(
+            #    self.boradCards)[1], self.robot1.convert(self.boradCards)[2], self.robot1.convert(self.boradCards)[3], self.robot1.convert(self.boradCards)[4])
 
             self.turnStart()
 
             self.riverStage()
 
-            print "Result:"
+            #print "Result:"
 
             self.result()
 
@@ -367,20 +401,29 @@ class test(object):
 
 def main():
 
-    tmp = test()
-    circle = 2
+    #tmp = test()
+    t = time.time()
+    circle = 4
     list1 = []
     
     for i in range(circle):
         list1.append([])
+        tmp = test()
         tmp.start()
         list1[i].append(tmp.data)
+        for i in tmp.fixed_game_list:
+            tmp.data[0].append(i.name)
     
+    #raw_input()
+
     name = str(time.localtime().tm_mon)+'.'+str(time.localtime().tm_mday)+'.'+str(time.localtime().tm_hour)+'.'+str(time.localtime().tm_min)
     callbook = xlsxwriter.Workbook('call'+name+'.xlsx')
     callsheet = callbook.add_worksheet('sheet')
     standardbook = xlsxwriter.Workbook('standard'+name+'.xlsx')
     standardsheet = standardbook.add_worksheet('sheet')
+
+    #raw_input()
+    print name
 
     row1 = 0
     col1 = 0
@@ -388,23 +431,35 @@ def main():
     col2 = 0
 
     for k in list1:
-        for c in range(len(k[0])):
-            if k[0][c] == 'robot1':
-                for i in k[c]:
+        for c in range(len(k[0])-1):
+            '''
+            if k[0][0][c] == 'robot1' or k[0][0][c] == 'robot2' or k[0][0][c] == 'robot3':
+                for i in k[0][c+1]:
                     callsheet.write(row1,col1,i)
                     col1 += 1
-            elif k[0][c] == '4 standard robot':
-                for i in k[c]:
+                row1 += 1
+                col1 = 0
+            '''
+            if k[0][0][c] == '8 random robot':
+                for i in k[0][c+1]:
+                    callsheet.write(row1,col1,i)
+                    col1 += 1
+                    if col1 >= 2000:
+                        break
+            elif k[0][0][c] == '4 standard robot':
+                for i in k[0][c+1]:
                     standardsheet.write(row2,col2,i)
                     col2 += 1
+                    if col2 >= 2000:
+                        break
         col1 = col2 = 0
         row1 += 1
         row2 += 1
 
     callbook.close()
     standardbook.close()    
+
+    print time.time() - t
         
-
-
 
 main()
