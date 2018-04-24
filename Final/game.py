@@ -1,9 +1,10 @@
 import CallRobot
 import Dealer
-import FoldRobot
+#import FoldRobot
 import StandardRobot
-import RandomRobot
+#import RandomRobot
 import AI_V1
+import AI_V2
 import xlsxwriter
 import time
 
@@ -27,7 +28,7 @@ class test(object):
         self.robot5 = AI_V1.robot('5 AI V1', self.initStack, self.minbet)
         self.robot6 = StandardRobot.robot(
             '6 standard robot', self.initStack, self.minbet)
-        self.robot7 = AI_V1.robot('7 AI V1', self.initStack, self.minbet)
+        self.robot7 = AI_V2.robot('7 AI V2', self.initStack, self.minbet)
         self.initial_game_list = [
             self.robot1, self.robot2, self.robot3,self.robot4,self.robot5,self.robot6,self.robot7]
         self.fixed_game_list = [self.robot1, self.robot2,self.robot3,self.robot4,self.robot5,self.robot6,self.robot7]
@@ -83,7 +84,7 @@ class test(object):
 
             for p in self.move_list[self.move_list.index(i)+1:]:
 
-                if p.name != '3 AI V1' and p.name != '5 AI V1' and p.name != '7 AI V1':
+                if p.name != '3 AI V1' and p.name != '5 AI V1' and p.name != '7 AI V2':
                     dec = p.raiseDecision(self.BET, self.POT)
                 else:
                     dec = p.raiseDecision(self.BET, self.POT, len(self.move_list)-1)
@@ -103,7 +104,7 @@ class test(object):
 
             for p in self.move_list[:self.move_list.index(i)]:
 
-                if p.name != '3 AI V1' and p.name != '5 AI V1' and p.name != '7 AI V1':
+                if p.name != '3 AI V1' and p.name != '5 AI V1' and p.name != '7 AI V2':
                     dec = p.raiseDecision(self.BET, self.POT)
                 else:
                     dec = p.raiseDecision(self.BET, self.POT, len(self.move_list)-1)
@@ -120,7 +121,10 @@ class test(object):
                     i.isRaise = False
                     return False
 
+
             i.isRaise = False
+            
+
 
             return False
 
@@ -200,7 +204,7 @@ class test(object):
                 obj.pot = self.POT
                 obj.boradCards = self.boradCards
                 
-                if obj.name != '3 AI V1' and obj.name != '5 AI V1' and obj.name != '7 AI V1':
+                if obj.name != '3 AI V1' and obj.name != '5 AI V1' and obj.name != '7 AI V2':
                     deci = obj.makeDecision()
                 else:
                     deci = obj.makeDecision(len(self.move_list)-1)
@@ -234,6 +238,7 @@ class test(object):
             if i.getHandStrength() > minstrength:
                 minstrength = i.getHandStrength()
                 self.winner = i.name
+                
             # print i.getHandStrength()
 
         print "Winner is " + self.winner
@@ -244,6 +249,12 @@ class test(object):
             if i.money <= 0:
                 if i in self.initial_game_list:
                     self.initial_game_list.remove(i)
+            if i.name == '7 AI V2':
+                if self.winner != i.name:
+                    i.reinforcement(0)
+                else:
+                    i.reinforcement(1)
+                print i.threshold1,i.HELLO
             
         
         for i in range(len(self.fixed_game_list)):
@@ -287,11 +298,14 @@ class test(object):
 
         if playerCount <= 3:
             for i in self.in_game_list:
-                if i.name[2:] != 'AI V1':
+                if i.name[2:] != 'AI V1' or i.name[2:] != 'AI V2':
                     self.GameEnd = False
                     break
                 else:
                     self.GameEnd = True
+        
+        if playerCount == 2:
+            self.GameEnd = True
 
         for i in self.in_game_list:
             i.clean()
@@ -304,9 +318,8 @@ class test(object):
 
         for i in self.initial_game_list:
             print i.name, i.money
-
-        
-        
+            if i.name == '7 AI V2':
+                print i.threshold1,i.threshold2
 
         print 'Press enter to Exit.'
         raw_input()
@@ -342,7 +355,7 @@ class test(object):
             for i in self.move_list[1:]:
                 i.addPosition([self.move_list.index(i), len(self.move_list)])
                 i.pot = self.POT
-                if i.name != '3 AI V1' and i.name != '5 AI V1' and i.name != '7 AI V1':
+                if i.name != '3 AI V1' and i.name != '5 AI V1' and i.name != '7 AI V2':
                     deci = i.startHand()
                 else:
                     deci = i.startHand(len(self.move_list)-1)
@@ -351,7 +364,7 @@ class test(object):
 
             self.utg.pot = self.POT
             if not self.israised:
-                if self.utg.name != '3 AI V1' and self.utg.name != '5 AI V1'and self.utg.name != '7 AI V1' :
+                if self.utg.name != '3 AI V1' and self.utg.name != '5 AI V1'and self.utg.name != '7 AI V2' :
                     utgdeci = self.utg.startHand()
                 else:
                     utgdeci = self.utg.startHand(len(self.move_list)-1)
@@ -388,7 +401,7 @@ class test(object):
 
         self.gameOver()
 
-        self.printData()
+        #self.printData()
     
     def printData(self):
 

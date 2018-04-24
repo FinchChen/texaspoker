@@ -305,8 +305,8 @@ class test(object):
 
         while not self.GameEnd:
 
-            #print 'Press enter to start.'
-            #raw_input()
+            print 'Press enter to start.'
+            raw_input()
             #print "Initial the game..."
             self.initialGame()
             #print "Game started.\n\nPre-flop stage:"

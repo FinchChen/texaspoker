@@ -14,6 +14,11 @@ class robot(object):
         self.isRaise = False
         self.betAmount = 0
         self.position = ''
+        self.HELLO = False
+
+        self.threshold1 = 1.3
+        self.threshold2 = 0.9
+
         self.MAPPING = {'A':12,'K':11,'Q':10,'J':9,'10':8,'9':7,'8':6,'7':5,'6':4,'5':3,'4':2,'3':1,'2':0}
         self.R_MAPPING = {'12':'A','11':'K','10':'Q','9':'J','8':'10','7':'9','6':'8','5':'7','4':'6','3':'5','2':'4','1':'3','0':'2'}
         self.Type_MAPPING = {'High card':1,'One pair':2,'Two pairs':3,'Trips':4,'Straight':5,'Full house':6,'Quads':7}
@@ -25,8 +30,8 @@ class robot(object):
 
         self.pot = 0
         self.boradCards = []
-        self.isRaise = False
         self.betAmount = 0
+        self.isRaise = False
     
         return
     
@@ -186,29 +191,29 @@ class robot(object):
         returnrate = self.returnrate(float(winrate),float(potodds))
 
         tmp = random.randint(0,99)
-        if returnrate < 0.8:
+        if returnrate < 1: 
             self.decision = 'check'
-        elif returnrate < 1:
-            self.decision = 'check'
-        elif returnrate < 1.3:
+        elif returnrate < self.threshold1:
             if tmp <= 59:
                 self.decision = 'check'
             else:
                 self.decision = 'raise'
+            self.HELLO = True
         else:
             self.decision = 'raise'
-        
         if self.decision == 'check':
             self.betAmount = 0
         elif self.decision == 'raise':
+            self.isRaise = True
+            
             #t = random.randint(3,8)
             self.betAmount = self.minbet
-            if self.winrate >= 0.98:
+            if self.winrate >= 0.98: 
                 if self.money >= 2 * self.pot:
                     self.betAmount = 2 * self.pot
                 else:
                     self.betAmount = self.money
-            elif self.winrate >= 0.9:
+            elif self.winrate >= self.threshold2:
                 self.betAmount = 10 * self.minbet
                 
         self.money -= self.betAmount
@@ -216,6 +221,18 @@ class robot(object):
         self.prt()
 
         return self.decision
+
+    def reinforcement(self,outcome): # 1 for win, 0 for lose
+
+        if outcome == 1:
+            if self.HELLO:
+                self.threshold1 -= 0.01
+        elif outcome == 0:
+            if self.HELLO:
+                self.threshold1 += 0.01
+        
+        self.HELLO = False
+
 
     def getHandStrength(self):
 
